@@ -24,12 +24,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setIsLoading(true);
     
     try {
+      // En producción, simular login sin MSW
+      if (import.meta.env.PROD) {
+        // Simular delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const users = [
+          {
+            id: 'user-1',
+            email: 'admin@inmoflow.com',
+            name: 'Ana García',
+            role: 'admin',
+            avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+          },
+          {
+            id: 'user-2', 
+            email: 'agent@inmoflow.com',
+            name: 'Carlos Ruiz',
+            role: 'agent',
+            avatar: 'https://images.pexels.com/photos/1040880/pexels-photo-1040880.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+          }
+        ];
+        
+        const user = users.find(u => u.email === email);
+        
+        if (user && password === 'demo123') {
+          setUser(user);
+          localStorage.setItem('inmoflow-user', JSON.stringify(user));
+          return;
+        } else {
+          throw new Error('Invalid credentials');
+        }
+      }
+      
+      // En desarrollo, usar MSW
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-
+  
       const data = await response.json();
       
       if (data.ok) {
